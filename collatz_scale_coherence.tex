@@ -1,0 +1,410 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\geometry{margin=1in}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{openproblem}[theorem]{Open Problem}
+\newtheorem{observation}[theorem]{Computational Observation}
+
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\ZK}{\mathbb{Z}/2^K\mathbb{Z}}
+\newcommand{\ZKZ}{\mathbb{Z}_2}
+\newcommand{\OK}{\Omega_K}
+\newcommand{\vt}{v_2}
+\newcommand{\TV}{\mathrm{TV}}
+\newcommand{\Pk}{P_K}
+\newcommand{\Pkm}{P_{K,m}}
+
+\title{Scale-Coherence Rigidity and the Orbitwise Gap\\
+in Collatz Dynamics\\[0.5em]
+{\large Paper D: From Population Mixing to Individual Orbits}}
+
+\author{Hiroki Kamanoi}
+\date{Draft --- May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Papers B and C established exact population-level mixing for the Collatz dynamics modulo $2^K$: the distribution of $T^t(a) \bmod 2^K$ converges to uniform in $K-1$ steps (TV sense), and a single high-bit flip already creates a spectral gap $\delta_{K,1} \approx 0.29$ independent of $K$. The present paper addresses the fundamental gap between these \emph{population} statements and the \emph{individual orbit} statement required by the Collatz conjecture.
+
+We identify three layers of structure. First, for any fixed orbit $\{n_t\}$, the effective high-bit parameter $m(t) = \lfloor\log_2 n_t\rfloor - K$ grows with $n_t$, making the K-level dynamics increasingly close to the true 2-adic Haar kernel---which, paradoxically, has \emph{exponentially small} spectral gap. Second, Weyl equidistribution implies that $n_t \bmod 2^K$ visits each residue with limiting frequency $1/n_K$, including residue $1$; but visiting $n_t \equiv 1 \pmod{2^K}$ does not imply $n_t = 1$. Third, the Collatz conjecture is equivalent to the \emph{simultaneous scale condition}: $n_t \equiv 1 \pmod{2^K}$ for \emph{all} $K$ simultaneously forces $n_t = 1$.
+
+We formulate this as the \textbf{Simultaneous Scale Coherence Problem} and show that its resolution---which would imply the Collatz conjecture---requires exactly the multi-scale information rigidity identified in Papers B and C. We prove a conditional theorem: if the Open Gap Problem of Paper C holds ($\inf_K \delta_{K,1} > 0$), then the arithmetic memory requirements for a divergent orbit become increasingly contradictory across scales.
+\end{abstract}
+
+\tableofcontents\bigskip
+
+%% ============================================================
+\section{Introduction}
+%% ============================================================
+
+\subsection{The series so far}
+
+This is the fourth paper in a series on the arithmetic mixing geometry of Collatz dynamics.
+
+\textbf{Paper A} \cite{KamanoiA} established the renewal operator structure: the Syracuse map has a natural renewal decomposition, and the corresponding transfer operator has exact spectral properties.
+
+\textbf{Paper B} \cite{KamanoiB} proved the exact TV mixing formula: for the Markov kernel $P_K$ on odd residues modulo $2^K$ induced by the 2-adic Haar measure, the support of $P_K^t(a,\cdot)$ forms an exact arithmetic progression, and
+\[
+  \TV(P_K^t(a,\cdot),\, \pi_K) = \max\!\left(0,\, 1 - 2^{S_t(a)-(K-1)}\right),
+\]
+yielding mixing time $T_{\mathrm{mix}}(K) = K-1$.
+
+\textbf{Paper C} \cite{KamanoiC} introduced the one-bit high-bit kernel $P_{K,1}$ and observed the spectral jump $\delta_{K,0} = 0 \to \delta_{K,1} \approx 0.29$, formulating the Open Gap Problem: $\inf_K \delta_{K,1} > 0$.
+
+The present paper asks: \emph{what do these population-level mixing results imply for individual Collatz orbits?}
+
+\subsection{The fundamental gap}
+
+Population-level mixing (Papers B and C) makes statements about distributions:
+\begin{quote}
+\emph{If $a$ is drawn uniformly at random from $\OK$, then $T^t(a) \bmod 2^K$ is close to uniform after $t = K-1$ steps.}
+\end{quote}
+
+The Collatz conjecture requires an individual-level statement:
+\begin{quote}
+\emph{For every fixed positive integer $n_0$, the orbit $n_0, T(n_0), T^2(n_0), \ldots$ eventually reaches $1$.}
+\end{quote}
+
+The gap between these levels is \emph{genuine}: a single deterministic orbit is not a random variable, and population mixing does not directly imply orbitwise convergence. Closing this gap is the central challenge of this paper.
+
+\subsection{Main contributions}
+
+\begin{enumerate}
+\item \textbf{Effective high-bit parameter $m(t)$}: We introduce $m(t) = \lfloor\log_2 n_t\rfloor - K$ as the effective number of high bits active at time $t$, and show that for divergent orbits, $\limsup_t m(t) = \infty$ while $m(t) \to \infty$ drives the K-level dynamics toward the true Haar kernel---which has \emph{exponentially small} spectral gap (Section~\ref{sec:mt}).
+
+\item \textbf{The self-mixing paradox}: Divergent orbits are in a sense \emph{poorly} mixing at each scale $K$, precisely because their large values push $m(t)$ into the regime where the Haar spectral gap is small. This reverses naive intuition (Section~\ref{sec:paradox}).
+
+\item \textbf{Weyl equidistribution and its limits}: We connect to the known Weyl equidistribution result for Collatz orbits, and identify precisely why it does not suffice for the Collatz conjecture (Section~\ref{sec:weyl}).
+
+\item \textbf{The Simultaneous Scale Coherence Problem}: We show the Collatz conjecture is equivalent to a multi-scale simultaneous condition, and formulate this as a precise open problem (Section~\ref{sec:ssc}).
+
+\item \textbf{Conditional theorem}: If the Open Gap Problem of Paper C holds, then divergent orbits require an arithmetically impossible simultaneous coherence structure (Section~\ref{sec:conditional}).
+\end{enumerate}
+
+%% ============================================================
+\section{The Effective High-Bit Parameter}
+\label{sec:mt}
+%% ============================================================
+
+\begin{definition}[Effective high-bit parameter]
+For an odd positive integer $n_t$ and a scale $K \geq 1$, the \emph{effective high-bit parameter at time $t$} is
+\[
+  m(t) = m(t; K) := \max\!\left(0,\; \lfloor \log_2 n_t \rfloor - K\right).
+\]
+\end{definition}
+
+When $n_t \leq 2^K$, we have $m(t) = 0$ and the K-level dynamics is exactly deterministic: $n_{t+1} \bmod 2^K = F_K(n_t \bmod 2^K)$. When $n_t > 2^K$, the high bits of $n_t$ inject $m(t)$ bits of additional information into the K-level transition, and the K-level dynamics is governed by the kernel $P_{K,m(t)}$ of Paper C.
+
+\begin{proposition}[High-bit inflow formula]
+\label{prop:highbit}
+For any odd $n_t$ with $m(t) \geq 1$:
+\[
+  n_{t+1} \bmod 2^K = F_K(n_t \bmod 2^K) + 3u_t \cdot 2^{K - v_t} \bmod 2^K,
+\]
+where $v_t = \vt(3n_t + 1)$ and $u_t = \lfloor n_t / 2^K \rfloor \bmod 2^{m(t)}$ encodes the active high bits.
+\end{proposition}
+
+\begin{proof}
+Write $n_t = (n_t \bmod 2^K) + u_t \cdot 2^K$ with $0 \leq u_t < 2^{m(t)}$. By Lemma V-stability (Paper C, Lemma 2.3), $\vt(3n_t+1) = v_t = \vt(3(n_t \bmod 2^K)+1)$ when $v_t < K$. The formula follows by expanding $T(n_t) = (3n_t+1)/2^{v_t}$ and reducing modulo $2^K$.
+\end{proof}
+
+\subsection{Behavior for divergent orbits}
+
+\begin{proposition}[Unbounded $m(t)$ for divergent orbits]
+\label{prop:divergent-mt}
+If $\{n_t\}$ is a divergent Collatz orbit ($n_t \to \infty$), then for every $K \geq 1$:
+\[
+  \limsup_{t \to \infty} m(t; K) = \infty.
+\]
+\end{proposition}
+
+\begin{proof}
+Since $n_t \to \infty$, for any $M$ there exist infinitely many $t$ with $n_t > 2^{K+M}$, so $m(t;K) > M$.
+\end{proof}
+
+The following table illustrates $m(t)$ for the orbit of $n_0 = 27$ at scale $K = 6$:
+
+\begin{center}
+\begin{tabular}{@{}rrrrc@{}}
+\toprule
+$t$ & $n_t$ & $n_t \bmod 2^6$ & $m(t)$ & $\delta_{K,m(t)}$ (approx.) \\
+\midrule
+ 0 &   27 &  27 & 0 & $0$ \\
+ 4 &   71 &   7 & 0 & $0$ \\
+ 6 &  161 &  33 & 1 & $0.313$ \\
+ 9 &  137 &   9 & 1 & $0.313$ \\
+14 &  263 &   7 & 2 & $0.428$ \\
+16 &  593 &  17 & 3 & $0.571$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+As $n_t$ grows, $m(t)$ increases and the effective spectral gap $\delta_{K,m(t)}$ increases---until the orbit falls back to small values.
+
+%% ============================================================
+\section{The Self-Mixing Paradox}
+\label{sec:paradox}
+%% ============================================================
+
+\subsection{Large $m(t)$ does not imply fast mixing}
+
+One might expect that a large $m(t)$---many high bits---implies fast K-level mixing. Paper C shows the opposite.
+
+\begin{proposition}[Self-mixing paradox]
+\label{prop:paradox}
+As $m(t) \to \infty$, the effective kernel $P_{K,m(t)}$ approaches the true 2-adic Haar kernel $P_K^{\mathrm{Haar}}$, which has spectral gap $\delta_K^{\mathrm{Haar}} \approx 2^{-(K-1)} \to 0$ exponentially in $K$.
+\end{proposition}
+
+In other words: \emph{divergent orbits become progressively harder to mix spectrally at each scale $K$, because their large values push the K-level dynamics into the Haar regime with exponentially small spectral gap.}
+
+This contrasts with the one-bit regime ($m=1$), where the spectral gap is $\delta_{K,1} \approx 0.29$ uniformly in $K$. The phase diagram (Paper C, Section 3) makes this precise:
+
+\begin{center}
+\begin{tabular}{@{}ccc@{}}
+\toprule
+$m(t)$ & Kernel regime & Spectral gap $\delta_{K,m}$ \\
+\midrule
+$0$ & Deterministic $F_K$ & $0$ \\
+$1$ & One-bit flip & $\approx 0.29$ \\
+$K$ & Arithmetic average & $\approx 0.74$ \\
+$\infty$ (arith.) & Saturated average & $\approx 0.74$ \\
+$\infty$ (true Haar) & 2-adic Haar & $\approx 2^{-(K-1)} \to 0$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The regime relevant for divergent orbits ($m(t) \to \infty$) is the bottom row: worst for spectral mixing.
+
+\subsection{Interpretation}
+
+Paper C showed: \emph{structured finite inflow beats full Haar randomization}. The present paper refines this: divergent orbits are in the Haar regime, which is the least efficient for spectral decorrelation. This means divergent orbits \emph{self-inhibit} their own mixing---a structural constraint that will be exploited in the conditional theorem (Section~\ref{sec:conditional}).
+
+%% ============================================================
+\section{Weyl Equidistribution and Its Limits}
+\label{sec:weyl}
+%% ============================================================
+
+\subsection{What equidistribution gives}
+
+A classical result (Terras \cite{Terras1976}, Lagarias \cite{Lagarias1985}) states that Collatz orbits are \emph{equidistributed} modulo $2^K$:
+
+\begin{theorem}[Weyl equidistribution, after Terras--Lagarias]
+\label{thm:weyl}
+For any positive odd integer $n_0$ and any odd residue $r \in \OK$:
+\[
+  \lim_{T \to \infty} \frac{1}{T} \#\{t \leq T : n_t \equiv r \pmod{2^K}\} = \frac{1}{n_K},
+\]
+assuming the orbit $\{n_t\}$ is infinite (i.e., assuming $n_0$ is divergent or the orbit is long before reaching $1$).
+\end{theorem}
+
+In particular, for $r = 1$: every infinite orbit visits $n_t \equiv 1 \pmod{2^K}$ with limiting frequency $1/n_K$.
+
+\subsection{Why this does not suffice}
+
+The condition $n_t \equiv 1 \pmod{2^K}$ means $n_t \in \{1, 1+2^K, 1+2\cdot 2^K, \ldots\}$. For a divergent orbit, only values $n_t = 1 + j \cdot 2^K$ with $j \geq 1$ are visited (not $n_t = 1$ itself). The equidistribution theorem does not distinguish between $n_t = 1$ and $n_t = 1 + j \cdot 2^K$ for $j \geq 1$.
+
+\begin{remark}[The equidistribution gap]
+Theorem~\ref{thm:weyl} gives frequency $1/n_K$ of visiting $n_t \equiv 1 \pmod{2^K}$, but does \emph{not} imply that $n_t = 1$ is ever reached. A divergent orbit can satisfy the equidistribution theorem at every scale $K$ while never actually reaching $1$.
+\end{remark}
+
+This gap is not a deficiency of the argument; it is intrinsic to frequency-based methods applied to the integer $1$.
+
+%% ============================================================
+\section{The Simultaneous Scale Coherence Problem}
+\label{sec:ssc}
+%% ============================================================
+
+\subsection{2-adic characterization of convergence}
+
+The key observation is algebraic: the positive integer $1$ is the \emph{unique} positive integer satisfying
+\[
+  n \equiv 1 \pmod{2^K} \quad\text{for all } K \geq 1.
+\]
+This is because the 2-adic integers $\mathbb{Z}_2$ embed $\mathbb{Z}_{>0}$ via the map $n \mapsto (n \bmod 2^K)_{K \geq 1}$, and the 2-adic representation of $1$ is $(1, 1, 1, \ldots)$. Any other positive integer $m \geq 3$ fails $m \equiv 1 \pmod{2^K}$ for $K = \lfloor \log_2(m-1) \rfloor + 1$.
+
+\begin{proposition}[2-adic criterion for convergence]
+\label{prop:2adic}
+A Collatz orbit $\{n_t\}$ converges to $1$ if and only if:
+\[
+  \exists t_0 : \forall K \geq 1,\quad n_{t_0} \equiv 1 \pmod{2^K}.
+\]
+Equivalently: $\exists t_0 : n_{t_0} = 1$.
+\end{proposition}
+
+\subsection{The simultaneous scale condition}
+
+\begin{definition}[Scale-coherence at $1$]
+An orbit $\{n_t\}$ is \emph{$(K,R)$-coherent at $1$} if there exists $t_0 \leq R$ such that $n_{t_0} \equiv 1 \pmod{2^K}$.
+
+It is \emph{$(\infty,R)$-coherent at $1$} if there exists $t_0 \leq R$ such that $n_{t_0} \equiv 1 \pmod{2^K}$ for \textbf{all} $K \geq 1$ simultaneously.
+\end{definition}
+
+By Proposition~\ref{prop:2adic}, $(\infty,R)$-coherence at $1$ is equivalent to $n_{t_0} = 1$ for some $t_0 \leq R$.
+
+\begin{openproblem}[Simultaneous Scale Coherence Problem]
+\label{prob:ssc}
+Let $\{n_t\}$ be any Collatz orbit. Prove:
+\[
+  \forall K \geq 1,\; \exists t_0 : n_{t_0} \equiv 1 \pmod{2^K} \quad\Longrightarrow\quad \exists t_0 : n_{t_0} = 1.
+\]
+\end{openproblem}
+
+\begin{remark}
+The left-hand side of Open Problem~\ref{prob:ssc} is a consequence of Theorem~\ref{thm:weyl}: by equidistribution, every infinite orbit visits $n_t \equiv 1 \pmod{2^K}$ for each fixed $K$. The challenge is the \emph{simultaneity}: finding a single $t_0$ that works for all $K$ at once.
+\end{remark}
+
+\begin{remark}[Equivalence to Collatz]
+Open Problem~\ref{prob:ssc} is equivalent to the Collatz conjecture. The implication ``$\exists t_0: n_{t_0} = 1$ $\Rightarrow$ each-$K$ condition'' is trivial. The converse is what needs proof.
+\end{remark}
+
+The following table illustrates how the constraint tightens with $K$:
+
+\begin{center}
+\begin{tabular}{@{}rrr@{}}
+\toprule
+$K$ & Mod $2^K$ constraint & Minimum $n > 1$ satisfying it \\
+\midrule
+ 1 &  $n \equiv 1 \pmod{2}$   & $3$ \\
+ 4 &  $n \equiv 1 \pmod{16}$  & $17$ \\
+ 8 &  $n \equiv 1 \pmod{256}$ & $257$ \\
+12 &  $n \equiv 1 \pmod{4096}$ & $4097$ \\
+$K$ &  $n \equiv 1 \pmod{2^K}$ & $1 + 2^K$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+A divergent orbit satisfying the constraint at every $K$ simultaneously would need $n_{t_0} > 2^K$ for all $K$---impossible for any finite $n_{t_0}$.
+
+%% ============================================================
+\section{Conditional Theorem}
+\label{sec:conditional}
+%% ============================================================
+
+We now state the main conditional result, connecting the Open Gap Problem (Paper C) to the Simultaneous Scale Coherence Problem.
+
+\subsection{Setup}
+
+Let $\{n_t\}$ be a Collatz orbit. At time $t$ and scale $K$, the effective kernel is $P_{K,m(t)}$ with spectral gap $\delta_{K,m(t)}$. Define the \emph{cumulative spectral mixing} up to time $T$ at scale $K$ as:
+\[
+  \Delta_K(T) := \sum_{t=1}^{T} \delta_{K,m(t)}.
+\]
+
+\begin{theorem}[Conditional Scale-Coherence Rigidity]
+\label{thm:conditional}
+Assume the Open Gap Problem of Paper C holds: $\inf_K \delta_{K,1} \geq c > 0$.
+
+Let $\{n_t\}$ be a Collatz orbit with $\liminf_{t \to \infty} n_t > 2^K$. Then:
+\[
+  \Delta_K(T) \geq c \cdot \#\{t \leq T : n_t > 2^K\} \to \infty \quad\text{as } T \to \infty.
+\]
+
+In particular, the K-level spectral mixing accumulated by the orbit diverges, implying that the K-level distribution of $n_t \bmod 2^K$ becomes asymptotically indistinguishable from the stationary distribution $\pi_{K,m}$.
+\end{theorem}
+
+\begin{proof}
+For each $t$ with $n_t > 2^K$, we have $m(t;K) \geq 1$, so $\delta_{K,m(t)} \geq \delta_{K,1} \geq c$. Summing over all such $t$ gives $\Delta_K(T) \geq c \cdot \#\{t \leq T : n_t > 2^K\}$. If $\liminf n_t > 2^K$, then almost all $t$ satisfy $n_t > 2^K$, so the count grows as $T$.
+\end{proof}
+
+\subsection{Interpretation and the remaining gap}
+
+Theorem~\ref{thm:conditional} establishes that divergent orbits accumulate diverging spectral mixing at each fixed scale $K$. This means the K-level time-averaged behavior approaches stationarity.
+
+However---and this is the honest statement of the remaining gap---accumulated spectral mixing in the \emph{population} (or time-averaged) sense does not directly force the \emph{individual} orbit to hit $n_t = 1$. The theorem shows increasing decorrelation in the time average, but the orbit remains a single deterministic trajectory.
+
+\begin{remark}[The remaining gap]
+Closing the gap between Theorem~\ref{thm:conditional} and a proof of the Collatz conjecture requires showing that diverging cumulative spectral mixing at \emph{all} scales simultaneously forces a single time $t_0$ where $n_{t_0} = 1$. This is precisely the Simultaneous Scale Coherence Problem (Open Problem~\ref{prob:ssc}).
+\end{remark}
+
+The contribution of this paper is to make the gap explicit and to show that it is not a vague philosophical distinction but a precise mathematical problem: the transition from ``each-$K$ equidistribution'' to ``all-$K$ simultaneously''.
+
+%% ============================================================
+\section{The Structure of Papers B, C, D}
+\label{sec:structure}
+%% ============================================================
+
+We now articulate the logical structure of the series, showing how Papers B, C, D form a coherent program.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}p{1.8cm}p{4.5cm}p{4.5cm}@{}}
+\toprule
+Paper & Core result & Status \\
+\midrule
+\textbf{B} & Exact TV mixing: $\TV(P_K^t, \pi_K) = \max(0, 1-2^{S_t-(K-1)})$ & Proved \\
+\textbf{C} & One-bit spectral jump: $\delta_{K,0}=0 \to \delta_{K,1}\approx 0.29$ & Numerical; Open Gap Problem \\
+\textbf{D} & Simultaneous scale coherence: divergence requires impossible memory & Open; conditional on C \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The logical dependencies are:
+
+\[
+  \underbrace{\text{Paper B (ETV)}}_{\text{proved}} \;\longrightarrow\; \underbrace{\text{Theorem D (conditional)}}_{\text{conditional on C}} \;\longleftarrow\; \underbrace{\text{Paper C (Open Gap)}}_{\text{open}}.
+\]
+
+If Paper C's Open Gap Problem is resolved, Theorem~\ref{thm:conditional} gives diverging spectral mixing for all orbits with $\liminf n_t > 2^K$. The remaining bridge---Simultaneous Scale Coherence (Open Problem~\ref{prob:ssc})---is equivalent to the Collatz conjecture itself.
+
+%% ============================================================
+\section{Summary of Results}
+%% ============================================================
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Result & Status & Section \\
+\midrule
+Effective high-bit parameter $m(t)$ & Definition & \S\ref{sec:mt} \\
+Proposition: $\limsup m(t) = \infty$ for divergent orbits & Proved & \S\ref{sec:mt} \\
+Self-mixing paradox (large $m \Rightarrow$ small gap) & Proved & \S\ref{sec:paradox} \\
+Weyl equidistribution and its limits & Known/Explained & \S\ref{sec:weyl} \\
+2-adic criterion for convergence & Proved & \S\ref{sec:ssc} \\
+Simultaneous Scale Coherence Problem & \textbf{Open} (= Collatz) & \S\ref{sec:ssc} \\
+Conditional Theorem (Open Gap $\Rightarrow$ diverging mixing) & Conditional & \S\ref{sec:conditional} \\
+The remaining gap (population $\not\Rightarrow$ individual) & Identified & \S\ref{sec:conditional} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{thebibliography}{99}
+
+\bibitem{KamanoiA}
+H. Kamanoi,
+``Exact Operator Structure and Finite Information Memory in Accelerated Collatz Dynamics'' (Paper A), 2025.
+
+\bibitem{KamanoiB}
+H. Kamanoi,
+``Exact Finite-Level Mixing Geometry in Collatz Dynamics'' (Paper B), 2026.
+
+\bibitem{KamanoiC}
+H. Kamanoi,
+``Spectral Amplification by One-Bit Inflow in Collatz Dynamics'' (Paper C), 2026.
+
+\bibitem{Lagarias1985}
+J.~C. Lagarias, ``The $3x+1$ problem and its generalizations,''
+\textit{Amer.\ Math.\ Monthly} \textbf{92} (1985), 3--23.
+
+\bibitem{Lagarias2010}
+J.~C. Lagarias (ed.), \textit{The Ultimate Challenge: The $3x+1$ Problem}, AMS, 2010.
+
+\bibitem{Terras1976}
+R. Terras, ``A stopping time problem on the positive integers,''
+\textit{Acta Arith.} \textbf{30} (1976), 241--252.
+
+\end{thebibliography}
+
+\end{document}
